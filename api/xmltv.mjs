@@ -1,32 +1,35 @@
 import { parse } from "node-html-parser";
 import axios from "axios";
-
-// month name mapping
-const monthsMap = [
-  "jan",
-  "feb",
-  "mar",
-  "apr",
-  "may",
-  "jun",
-  "jul",
-  "aug",
-  "sep",
-  "oct",
-  "nov",
-  "dec",
-];
+import { parse as parseDateString } from "date-fns";
 
 // @temp
 import html from "./_html.mjs";
 
-function parseDay(dayHtml) {
-  const year = new Date().getFullYear();
+function getTime(showHtml, date) {
+  const timeHtml = showHtml.querySelector(".time > h5");
+  const timeString = timeHtml.text;
+  return parseDateString(timeString, "h:mma", date);
+}
 
-  const [, monthStr, day] = dayHtml.id.split("-");
-  const month = monthsMap.indexOf(monthStr);
-  const dateObj = new Date(year, month, day);
-  console.log("m %s, d %s", month, day, dateObj);
+function parseShow(showHtml, date) {
+  //   const detailsHtml = showHtml.querySelector(".row");
+  console.log("show (time=%s)", getTime(showHtml, date));
+}
+
+function parseDay(dayHtml) {
+  const [, monthString, day] = dayHtml.id.split("-");
+
+  const dateObj = parseDateString(
+    `${monthString}-${day}`,
+    "MMM-dd",
+    new Date()
+  );
+  console.log("pppp", dateObj);
+
+  const shows = dayHtml.querySelectorAll(".schedule-row");
+  shows.forEach((showHtml) => {
+    parseShow(showHtml, dateObj);
+  });
 }
 
 function getDays(pageHtml) {
